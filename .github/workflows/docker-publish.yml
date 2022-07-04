@@ -1,8 +1,9 @@
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
 
-name: Node Project `my-app` CI on ECR
+name: Deploy to Amazon ECR
 
 jobs:
   deploy:
@@ -10,15 +11,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Check commit status
+      id: commit-status
+      run: |
+        # Check the status of the Git commit
+        CURRENT_STATUS=$(curl --url https://api.github.com/repos/${{ github.repository }}/commits/${{ github.sha }}/status --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' | jq -r '.state');
+        echo "Current status is: $CURRENT_STATUS"
+        while [ "${CURRENT_STATUS^^}" = "PENDING" ]; 
+          do sleep 10; 
+          CURRENT_STATUS=$(curl --url https://api.github.com/repos/${{ github.repository }}/commits/${{ github.sha }}/status --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' | jq -r '.state');
+        done;
+        echo "Current status is: $CURRENT_STATUS"
+        if [ "${CURRENT_STATUS^^}" = "FAILURE" ]; 
+          then echo "Commit status failed. Canceling execution"; 
+          exit 1; 
+        fi
+        
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v1
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_REGION }}
+        aws-region: ap-south-1
 
     - name: Login to Amazon ECR
       id: login-ecr
@@ -28,11 +45,12 @@ jobs:
       id: build-image
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: my-app-repo
-        IMAGE_TAG: latest
+        ECR_REPOSITORY: galaxy-ecr-web-image
+        IMAGE_TAG: ${{ github.sha }}
       run: |
-        # Build a docker container and push it to ECR 
+        # Build a docker container and
+        # push it to ECR so that it can
+        # be deployed to ECS.
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        echo "Pushing image to ECR..."
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
