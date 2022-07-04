@@ -1,6 +1,4 @@
-name: Deploy to Amazon ECS
-
-proxy_max_temp_file_size 0;
+name: Deploy to Amazon ECR
 
 on:
   push:
@@ -37,7 +35,7 @@ jobs:
       id: build-image
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: galaxy-ecr-web-image
+        ECR_REPOSITORY: tf-custom-container-recc
         IMAGE_TAG: ${{ github.sha }}
       run: |
         # Build a docker container and
