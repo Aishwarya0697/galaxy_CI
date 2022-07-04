@@ -35,7 +35,7 @@ jobs:
       id: build-image
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: 922593234707.dkr.ecr.us-west-2.amazonaws.com/galaxy-ecr-web-image:latest
+        ECR_REPOSITORY: galaxy-ecr-web-image
         IMAGE_TAG: ${{ github.sha }}
       run: |
         # Build a docker container and
