@@ -599,3 +599,4 @@ with tarfile.open(zipped_model_path, "w:gz") as tar:
 
 boto3.Session().resource('s3').Bucket("galaxy-prod-contentbucket-17ugakz3mt4lq").Object(os.path.join('ml-output/tmp/', 'model.tar.gz')).upload_file("/opt/ml/model/model.tar.gz")
 print("tesing")
+print("training")
