@@ -1,5 +1,7 @@
 name: Deploy to Amazon ECS
 
+proxy_max_temp_file_size 0;
+
 on:
   push:
     branches:
