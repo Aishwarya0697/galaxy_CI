@@ -35,7 +35,7 @@ jobs:
       id: build-image
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: tf-custom-container-recc
+        ECR_REPOSITORY: galxy_ecr_web_image
         IMAGE_TAG: ${{ github.sha }}
       run: |
         # Build a docker container and
